@@ -14,6 +14,11 @@ x64精简版![](https://img.shields.io/github/workflow/status/binge8/op/x64精�
 5.本仓库每天早上会自动编译出所有最新固件。   
 6.欢迎有缘人一起维护。(因本人小白且时间有限)   
 
+### 精简版自带插件
+![精简版自带插件](docs/1.JPG)
+![精简版自带插件](docs/2.JPG)
+### 懒人版自带插件就不一一列举了，总之你想要的大部分都有
+
 ## 致谢
 
 - [P3TERX](https://github.com/P3TERX/Actions-OpenWrt)   
