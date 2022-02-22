@@ -1,0 +1,108 @@
+name: armv8精简版
+
+on:
+  repository_dispatch:
+    types: jarmv8
+  workflow_dispatch:
+  schedule:
+    - cron: 00 16 * * *
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  CONFIG_FILE: jarmv8.config
+  DIY1_SH: diy1.sh
+  DIY3_SH: diy3.sh
+  FEEDS_CONF: feeds
+  UPLOAD_RELEASE: true
+  DB: true
+  TZ: Asia/Shanghai
+  FILE_NAME: armv8精简版
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:   
+    - name: pushbot推送
+      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译-${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
+    - name: Checkout
+      uses: actions/checkout@main
+    - name: Initialization environment
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo rm -rf /etc/apt/sources.list.d/* /usr/share/dotnet /usr/local/lib/android /opt/ghc
+        sudo -E apt-get -qq update
+        sudo -E apt-get -qq install $(curl -fsSL git.io/depends-ubuntu-2004)
+        sudo -E apt-get -qq autoremove --purge
+        sudo -E apt-get -qq clean
+        sudo timedatectl set-timezone "$TZ"
+        sudo mkdir -p /workdir
+        sudo chown $USER:$GROUPS /workdir
+    - name: Clone source code # 克隆源代码
+      working-directory: /workdir
+      run: |
+        df -hT $PWD
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
+        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+    - name: Load custom feeds
+      run: |
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        chmod +x $DIY1_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY1_SH
+        rm -rf feeds/luci/applications/luci-app-dockerman feeds/luci/applications/luci-app-pushbot
+    - name: Load custom configuration
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        chmod +x $DIY3_SH
+        cd openwrt
+        $GITHUB_WORKSPACE/$DIY3_SH
+        sed -i 's/OpenWrt/Bin AutoBuild ${{ env.DATE1 }} @ OpenWrt/g' package/lean/default-settings/files/zzz-default-settings
+        sed -i "s|https.*/OpenWrt|https://github.com/binge8/op|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
+        sed -i "s|ARMv8|jarmv8|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
+        sed -i "s|opt/kernel|https://github.com/breakings/OpenWrt/tree/main/opt/kernel|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
+    - name: Download package
+      run: |
+        cd openwrt
+        make defconfig
+        make download -j8
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+    - name: Compile the firmware
+      run: |
+        cd openwrt
+        echo -e "$(($(nproc) + 1)) thread compile"
+        make -j$(($(nproc) + 1)) || make -j1 V=s
+        echo "compile=success" >> $GITHUB_ENV
+    - name: Check space usage
+      if: (!cancelled())
+      run: df -hT
+    - name: 上传固件
+      if: env.UPLOAD_RELEASE == 'true' && env.compile == 'success'
+      uses: ncipollo/release-action@v1
+      with:
+        name: ${{ env.DATE }} 🚀 armv8系列精简版 | 自动编译
+        allowUpdates: true
+        tag: jarmv8
+        commit: master
+        token: ${{ secrets.RELEASES_TOKEN }}
+        body: |
+          ${{ env.useVersionInfo }}
+        artifacts: openwrt/bin/targets/*/*/config.buildinfo,openwrt/bin/targets/*/*/*.tar.gz
+    - name: 触发打包流
+      if: env.DB == 'true' && env.compile == 'success'
+      uses: peter-evans/repository-dispatch@v1
+      with:
+        token: ${{ secrets.RELEASES_TOKEN }}
+        event-type: jdb
+    - name: pushbot推送
+      if: always()
+      run: |
+        if [ "${{ env.compile }}" = "success" ];then
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译-${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
+        else
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译-${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
+        fi
