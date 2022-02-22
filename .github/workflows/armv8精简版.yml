@@ -86,7 +86,7 @@ jobs:
       with:
         name: ${{ env.DATE }} 🚀 armv8系列精简版 | 自动编译
         allowUpdates: true
-        tag: jarmv8
+        tag: 3jarmv8
         commit: master
         token: ${{ secrets.RELEASES_TOKEN }}
         body: |

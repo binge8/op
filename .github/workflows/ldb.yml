@@ -30,7 +30,7 @@ jobs:
         omitNameDuringUpdate: true
         omitBodyDuringUpdate: true
         allowUpdates: true
-        tag: larmv8
+        tag: 1larmv8
         token: ${{ secrets.RELEASES_TOKEN }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
     - name: pushbot推送

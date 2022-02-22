@@ -93,7 +93,7 @@ jobs:
       with:
         name: ${{ env.DATE }} 🚀 x64懒人版 | 自动编译
         allowUpdates: true
-        tag: lx64
+        tag: 2lx64
         commit: master
         token: ${{ secrets.RELEASES_TOKEN }}
         body: |
