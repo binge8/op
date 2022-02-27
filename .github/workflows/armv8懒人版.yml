@@ -10,10 +10,10 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  CONFIG_FILE: larmv8.config
-  DIY1_SH: diy1.sh
-  DIY3_SH: diy3.sh
-  FEEDS_CONF: feeds
+  CONFIG_FILE: bin/larmv8.config
+  DIY1_SH: bin/diy1.sh
+  DIY3_SH: bin/diy3.sh
+  FEEDS_CONF: bin/feeds
   UPLOAD_RELEASE: true
   DB: true
   TZ: Asia/Shanghai
@@ -110,9 +110,7 @@ jobs:
         event-type: ldb
     - name: pushbot推送
       if: always()
-      run: |
-        if [ "${{ env.organize }}" = "success" ];then
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译-${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
-        else
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译-${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
-        fi
+      env:
+        pushbot: ${{ secrets.PUSHBOT }}
+      run: ./bin/pushbot.sh
+      shell: bash
