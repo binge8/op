@@ -11,12 +11,12 @@ svn co https://github.com/0saga0/OpenClash/trunk/luci-app-openclash package/open
 svn co https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom/trunk/luci-theme-infinityfreedom package/openwrt-packages/luci-theme-infinityfreedom
 git clone https://github.com/lisaac/luci-app-dockerman.git package/openwrt-packages/luci-app-dockerman
 git clone https://github.com/fw876/helloworld.git package/openwrt-packages/helloworld
-git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/luci-app-passwall
+#git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/luci-app-passwall
+git clone https://github.com/kenzok8/small.git package/openwrt-packages/small
+svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-passwall package/openwrt-packages/small/luci-app-passwall
 git clone https://github.com/ophub/luci-app-amlogic.git package/openwrt-packages/luci-app-amlogic
 svn co https://github.com/Lienol/openwrt-package/trunk/luci-app-socat package/openwrt-packages/luci-app-socat
 git clone https://github.com/zzsj0928/luci-app-pushbot.git package/openwrt-packages/luci-app-pushbot
-svn co https://github.com/liuran001/openwrt-packages/trunk/luci-app-smartdns package/openwrt-packages/luci-app-smartdns
-svn co https://github.com/liuran001/openwrt-packages/trunk/smartdns package/openwrt-packages/smartdns
 git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/openwrt-packages/luci-app-adguardhome
 #更新安装feeds
 ./scripts/feeds update -a
