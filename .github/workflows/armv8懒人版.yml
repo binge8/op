@@ -96,6 +96,7 @@ jobs:
       with:
         name: ${{ env.DATE }} 🚀 armv8系列懒人版 | 自动编译
         allowUpdates: true
+        removeArtifacts: true
         tag: 1larmv8
         commit: master
         token: ${{ secrets.RELEASES_TOKEN }}
