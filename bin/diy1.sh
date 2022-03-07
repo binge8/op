@@ -21,7 +21,7 @@ git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/open
 #更新安装feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
-#删除自带的软件包
+#删除自带的重复软件包
 rm -rf feeds/luci/applications/luci-app-dockerman feeds/luci/applications/luci-app-pushbot
 #设置环境变量
 useVersionInfo=$(git show -s --date=short --format="编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录:<br/>更新人: %an<br/>更新时间: %cd<br/>更新内容: %s<br/>哈希值: %H")
