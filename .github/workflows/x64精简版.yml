@@ -52,7 +52,6 @@ jobs:
         chmod +x $DIY1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY1_SH
-        rm -rf feeds/luci/applications/luci-app-dockerman feeds/luci/applications/luci-app-pushbot
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
