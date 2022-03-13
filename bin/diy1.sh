@@ -11,9 +11,8 @@ svn co https://github.com/0saga0/OpenClash/trunk/luci-app-openclash package/open
 svn co https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom/trunk/luci-theme-infinityfreedom package/openwrt-packages/luci-theme-infinityfreedom
 git clone https://github.com/lisaac/luci-app-dockerman.git package/openwrt-packages/luci-app-dockerman
 git clone https://github.com/fw876/helloworld.git package/openwrt-packages/helloworld
-#git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/luci-app-passwall
-git clone https://github.com/kenzok8/small.git package/openwrt-packages/small
-svn co https://github.com/kenzok8/openwrt-packages/trunk/luci-app-passwall package/openwrt-packages/small/luci-app-passwall
+git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/openwrt-passwall/openwrt-passwall
+git clone https://github.com/xiaorouji/openwrt-passwall2.git package/openwrt-packages/openwrt-passwall/openwrt-passwall2
 git clone https://github.com/ophub/luci-app-amlogic.git package/openwrt-packages/luci-app-amlogic
 svn co https://github.com/Lienol/openwrt-package/trunk/luci-app-socat package/openwrt-packages/luci-app-socat
 git clone https://github.com/zzsj0928/luci-app-pushbot.git package/openwrt-packages/luci-app-pushbot
