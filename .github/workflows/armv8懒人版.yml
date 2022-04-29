@@ -64,8 +64,8 @@ jobs:
         sed -i "s|https.*/OpenWrt|https://github.com/binge8/op|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
         sed -i "s|ARMv8|larmv8|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
         sed -i "s|opt/kernel|https://github.com/breakings/OpenWrt/tree/main/opt/kernel|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
-        rm -rf package/kernel/linux
-        svn co https://github.com/WYC-2020/lede/trunk/package/kernel/linux package/kernel/linux
+        rm -rf package/kernel
+        svn co https://github.com/WYC-2020/lede/trunk/package/kernel package/kernel
     - name: Download package
       run: |
         cd openwrt
