@@ -21,4 +21,4 @@ jobs:
         keep_minimum_runs: 0
     - name: pushbot推送
       if: always()
-      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"Actions云编译op清理成功","content":"op清理成功结束","template":"json"}' http://www.pushplus.plus/send
+      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"op清理成功","content":"op清理成功结束","template":"json"}' http://www.pushplus.plus/send
