@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:    
-    - name: pushbot推送
+    - name: 企业微信推送
       run: curl -H "Content-Type:application/json" -X POST -d '{"touser":"@all","msgtype":"text","agentid":"${{ secrets.aid }}","text":{"content":"Actions-云编译\n${{ env.FILE_NAME }}开始编译"}}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ secrets.token }}
     - name: Checkout
       uses: actions/checkout@main
@@ -109,7 +109,7 @@ jobs:
       with:
         token: ${{ secrets.RELEASES_TOKEN }}
         event-type: ldb
-    - name: pushbot推送
+    - name: 企业微信推送
       if: always()
       run: |
         if [ "${{ env.organize }}" = "success" ];then

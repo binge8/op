@@ -33,7 +33,7 @@ jobs:
         tag: 1larmv8
         token: ${{ secrets.RELEASES_TOKEN }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
-    - name: pushbot推送
+    - name: 企业微信推送
       if: always()
       run: |
         if [ "${{ env.PACKAGED_STATUS }}" = "success" ];then
