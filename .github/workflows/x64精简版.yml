@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-    - name: #微信推送
+    - name: 微信推送
       run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
     - name: Checkout
       uses: actions/checkout@main

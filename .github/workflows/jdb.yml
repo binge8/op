@@ -33,7 +33,7 @@ jobs:
         tag: 3jarmv8
         token: ${{ secrets.RELEASES_TOKEN }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
-    - name: #微信推送
+    - name: 微信推送
       if: always()
       run: |
         if [ "${{ env.PACKAGED_STATUS }}" = "success" ];then

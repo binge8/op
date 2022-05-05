@@ -19,5 +19,5 @@ jobs:
       with:
         retain_days: 3
         keep_minimum_runs: 0
-    - name: #微信推送
+    - name: 微信推送
       run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"op清理成功","content":"op清理成功","template":"json"}' http://www.pushplus.plus/send
