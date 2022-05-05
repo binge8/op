@@ -33,11 +33,11 @@ jobs:
         tag: 3jarmv8
         token: ${{ secrets.RELEASES_TOKEN }}
         artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
-    - name: 企业微信推送
+    - name: #微信推送
       if: always()
       run: |
-        if [ "${{ env.PACKAGED_STATUS }}" = "success" ];then
-          curl -H "Content-Type:application/json" -X POST -d '{"touser":"@all","msgtype":"text","agentid":"${{ secrets.aid }}","text":{"content":"Actions-云编译\n${{ env.FILE_NAME }}打包成功"}}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ secrets.token }}
+        if [ "${{ env.compile }}" = "success" ];then
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
         else
-          curl -H "Content-Type:application/json" -X POST -d '{"touser":"@all","msgtype":"text","agentid":"${{ secrets.aid }}","text":{"content":"Actions-云编译\n${{ env.FILE_NAME }}打包失败"}}' https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=${{ secrets.token }}
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
         fi
