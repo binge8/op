@@ -7,16 +7,18 @@ git clone https://github.com/Leo-Jo-My/luci-theme-opentomcat.git package/openwrt
 git clone https://github.com/binge8/luci-theme-butongwifi.git package/openwrt-packages/luci-theme-butongwifi
 git clone https://github.com/openwrt-develop/luci-theme-atmaterial.git package/openwrt-packages/luci-theme-atmaterial
 git clone https://github.com/1wrt/luci-app-ikoolproxy.git package/openwrt-packages/luci-app-ikoolproxy
-svn co https://github.com/0saga0/OpenClash/trunk/luci-app-openclash package/openwrt-packages/luci-app-openclash
+svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-openclash package/openwrt-packages/luci-app-openclash
 svn co https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom/trunk/luci-theme-infinityfreedom package/openwrt-packages/luci-theme-infinityfreedom
 git clone https://github.com/lisaac/luci-app-dockerman.git package/openwrt-packages/luci-app-dockerman
 git clone https://github.com/fw876/helloworld.git package/openwrt-packages/helloworld
-git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/openwrt-passwall/openwrt-passwall
-git clone https://github.com/xiaorouji/openwrt-passwall2.git package/openwrt-packages/openwrt-passwall/openwrt-passwall2
+svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-passwall package/openwrt-packages/openwrt-passwall/openwrt-passwall
+git clone https://github.com/xiaorouji/openwrt-passwall.git package/openwrt-packages/openwrt-passwall/openwrt-passwall2
 git clone https://github.com/ophub/luci-app-amlogic.git package/openwrt-packages/luci-app-amlogic
 svn co https://github.com/Lienol/openwrt-package/trunk/luci-app-socat package/openwrt-packages/luci-app-socat
 git clone https://github.com/zzsj0928/luci-app-pushbot.git package/openwrt-packages/luci-app-pushbot
 git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/openwrt-packages/luci-app-adguardhome
+svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-vssr package/openwrt-packages/luci-app-vssr
+svn co https://github.com/WYC-2020/openwrt-packages/trunk/lua-maxminddb package/openwrt-packages/luci-app-vssr/lua-maxminddb
 #更新安装feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
