@@ -12,9 +12,13 @@ svn co https://github.com/xiaoqingfengATGH/luci-theme-infinityfreedom/trunk/luci
 git clone https://github.com/lisaac/luci-app-dockerman.git package/openwrt-packages/luci-app-dockerman
 git clone https://github.com/fw876/helloworld.git package/openwrt-packages/helloworld
 svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-passwall package/openwrt-packages/openwrt-passwall
+git clone https://github.com/kenzok8/small.git package/openwrt-packages/openwrt-passwall/openwrt-passwall2
 git clone https://github.com/ophub/luci-app-amlogic.git package/openwrt-packages/luci-app-amlogic
-svn co https://github.com/Lienol/openwrt-package/trunk/luci-app-socat package/openwrt-packages/luci-app-socat
+svn co https://github.com/kenzok8/small-package/trunk/luci-app-socat package/openwrt-packages/luci-app-socat
 git clone https://github.com/zzsj0928/luci-app-pushbot.git package/openwrt-packages/luci-app-pushbot
+svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-eqos package/openwrt-packages/luci-app-eqos
+svn co https://github.com/kenzok8/small-package/trunk/luci-app-ddnsto package/openwrt-packages/luci-app-ddnsto
+svn co https://github.com/kenzok8/small-package/trunk/ddnsto package/openwrt-packages/ddnsto
 git clone https://github.com/rufengsuixing/luci-app-adguardhome.git package/openwrt-packages/luci-app-adguardhome
 svn co https://github.com/WYC-2020/openwrt-packages/trunk/luci-app-vssr package/openwrt-packages/luci-app-vssr
 svn co https://github.com/WYC-2020/openwrt-packages/trunk/lua-maxminddb package/openwrt-packages/luci-app-vssr/lua-maxminddb
