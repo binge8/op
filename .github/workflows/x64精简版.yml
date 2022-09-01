@@ -85,7 +85,6 @@ jobs:
       run: |
         rm -rf openwrt/bin/targets/x86/64/packages
         cd openwrt/bin/targets/*/*
-        bzip2 *.img
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "organize=success" >> $GITHUB_ENV
     - name: Create release

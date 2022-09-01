@@ -84,10 +84,10 @@ jobs:
       run: |
         bin1=openwrt/bin/targets/x86/64
         mkdir -p bin2 && cp -r $bin1/* bin2
-        rm -rf $bin1/*.img bin2/packages
+        rm -rf $bin1/*.gz bin2/packages
         tar -zcvf bin.tar.gz openwrt/bin
         cp bin.tar.gz bin2
-        cd bin2 && bzip2 *.img
+        cd bin2
         echo "organize=success" >> $GITHUB_ENV
     - name: Create release
       if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
