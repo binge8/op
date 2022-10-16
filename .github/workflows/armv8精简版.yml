@@ -84,7 +84,7 @@ jobs:
       run: df -hT
     - name: 上传固件
       if: env.UPLOAD_RELEASE == 'true' && env.compile == 'success'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} 🚀 armv8系列精简版 | 自动编译
         allowUpdates: true
@@ -97,7 +97,7 @@ jobs:
         artifacts: openwrt/bin/targets/*/*/config.buildinfo,openwrt/bin/targets/*/*/*.tar.gz
     - name: 触发打包流
       if: env.DB == 'true' && env.compile == 'success'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@main
       with:
         token: ${{ secrets.RELEASES_TOKEN }}
         event-type: jdb

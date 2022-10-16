@@ -89,7 +89,7 @@ jobs:
         echo "organize=success" >> $GITHUB_ENV
     - name: Create release
       if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} 🚀 x64精简版 | 自动编译
         allowUpdates: true

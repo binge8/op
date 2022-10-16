@@ -25,7 +25,7 @@ jobs:
         KERNEL_VERSION_NAME: 5.15.2_5.19.2
     - name: upload release
       if: env.UPLOAD_RELEASE == 'true' && env.PACKAGED_STATUS == 'success'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@main
       with:
         omitNameDuringUpdate: true
         omitBodyDuringUpdate: true

@@ -94,7 +94,7 @@ jobs:
         echo "organize=success" >> $GITHUB_ENV
     - name: upload release
       if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
-      uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} 🚀 armv8系列懒人版 | 自动编译
         allowUpdates: true
@@ -107,7 +107,7 @@ jobs:
         artifacts: bin2/*.tar.gz,bin2/config.buildinfo
     - name: 触发打包流
       if: env.DB == 'true' && env.organize == 'success'
-      uses: peter-evans/repository-dispatch@v1
+      uses: peter-evans/repository-dispatch@main
       with:
         token: ${{ secrets.RELEASES_TOKEN }}
         event-type: ldb
