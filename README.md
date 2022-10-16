@@ -1,7 +1,7 @@
 x64精简版![](https://img.shields.io/github/workflow/status/binge8/op/x64精简版?style=flat-square) x64懒人版![](https://img.shields.io/github/workflow/status/binge8/op/x64懒人版?style=flat-square) armv8精简版![](https://img.shields.io/github/workflow/status/binge8/op/armv8精简版?style=flat-square)  armv8懒人版![](https://img.shields.io/github/workflow/status/binge8/op/armv8懒人版?style=flat-square)
 
 # Actions-OpenWrt  
-🚀 推荐本人[➦自用稳定不限量机场](https://mosuplus.cc/#/register?code=usup0DDL) ，还可以免账号登陆享受Pornhub会员，部分套餐送Netflix会员。本仓库默认每天晚上自动编译。每天保持固件最新，[➦我的自建源](http://256pd.top:9666/) 里插件和依赖最新      
+🚀 推荐本人[➦自用稳定机场](https://www.akijapan.net/#/register?code=itwRdCr9) 。本仓库默认每天晚上自动编译。每天保持固件最新，[➦我的自建源](http://256pd.top:9666/) 里插件和依赖最新      
 
 ## 注：所有固件默认管理IP为：192.168.7.1 密码：password   
   主仓库使用[➦L大佬](https://github.com/coolsnowwolf/lede)，armv8系列打包库和内核使用[➦F大佬](https://github.com/unifreq)    

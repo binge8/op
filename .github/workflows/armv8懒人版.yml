@@ -28,7 +28,7 @@ jobs:
       run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
     - name: Checkout
       uses: actions/checkout@main
-    - name: Initialization environment
+    - name: 搭建编译环境
       env:
         DEBIAN_FRONTEND: noninteractive
       run: |
@@ -41,7 +41,7 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo mkdir -p /workdir
         sudo chown $USER:$GROUPS /workdir
-    - name: Clone source code # 克隆源代码
+    - name: 克隆源代码
       id: source
       working-directory: /workdir
       run: |
@@ -50,13 +50,13 @@ jobs:
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         git clone https://github.com/binge8/ybin.git
         cp ybin/bin/* $GITHUB_WORKSPACE/bin
-    - name: Load custom feeds
+    - name: 更新feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
         chmod +x $DIY1_SH
         cd openwrt
         $GITHUB_WORKSPACE/$DIY1_SH
-    - name: Load custom configuration
+    - name: 自定义配置
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
@@ -67,14 +67,14 @@ jobs:
         sed -i "s|https.*/OpenWrt|https://github.com/binge8/op|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
         sed -i "s|ARMv8|larmv8|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
         sed -i "s|opt/kernel|https://github.com/breakings/OpenWrt/tree/main/opt/kernel|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
-    - name: Download package
+    - name: 下载软件包
       run: |
         cd openwrt
         make defconfig
         make download -j8
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
-    - name: Compile the firmware
+    - name: 编译
       run: |
         cd openwrt
         echo -e "$(($(nproc) + 1)) thread compile"
@@ -83,7 +83,7 @@ jobs:
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
-    - name: Organize files
+    - name: 整理编译文件
       if: env.compile == 'success'
       run: |
         bin1=openwrt/bin/targets/armvirt/64
@@ -92,7 +92,7 @@ jobs:
         tar -zcvf bin.tar.gz openwrt/bin
         cp bin.tar.gz bin2
         echo "organize=success" >> $GITHUB_ENV
-    - name: upload release
+    - name: 发布release
       if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
       uses: ncipollo/release-action@main
       with:
