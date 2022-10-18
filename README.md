@@ -1,4 +1,5 @@
-x64精简版![](https://img.shields.io/github/workflow/status/binge8/op/x64精简版?style=flat-square) x64懒人版![](https://img.shields.io/github/workflow/status/binge8/op/x64懒人版?style=flat-square) armv8精简版![](https://img.shields.io/github/workflow/status/binge8/op/armv8精简版?style=flat-square)  armv8懒人版![](https://img.shields.io/github/workflow/status/binge8/op/armv8懒人版?style=flat-square)
+x64精简版![](https://img.shields.io/github/workflow/status/binge8/op/x64精简版?style=flat-square) x64懒人版![](https://img.shields.io/github/workflow/status/binge8/op/x64懒人版?style=flat-square) armv8精简版![](https://img.shields.io/github/workflow/status/binge8/op/armv8精简版?style=flat-square)  armv8懒人版![](https://img.shields.io/github/workflow/status/binge8/op/armv8懒人版?style=flat-square)  
+<img src="https://img.shields.io/github/downloads/binge8/op/total.svg?style=for-the-badge&color=32C955"/>  
 
 # Actions-OpenWrt  
 🚀 推荐本人[➦自用稳定机场](https://www.akijapan.net/#/register?code=itwRdCr9) 。本仓库默认每天晚上自动编译。每天保持固件最新，[➦我的自建源](http://256pd.top:9666/) 里插件和依赖最新      
