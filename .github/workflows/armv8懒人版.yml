@@ -10,10 +10,10 @@ on:
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
   REPO_BRANCH: master
-  CONFIG_FILE: bin/larmv8.config
-  DIY1_SH: bin/diy1.sh
-  DIY3_SH: bin/diy3.sh
-  FEEDS_CONF: bin/feeds
+  CONFIG_FILE: ybin/bin/larmv8.config
+  DIY1_SH: ybin/bin/diy1.sh
+  DIY3_SH: ybin/bin/diy3.sh
+  FEEDS_CONF: ybin/bin/feeds
   UPLOAD_RELEASE: true
   DB: true
   TZ: Asia/Shanghai
@@ -49,7 +49,6 @@ jobs:
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         git clone https://github.com/binge8/ybin.git
-        cp ybin/bin/* $GITHUB_WORKSPACE/bin
     - name: 更新feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
