@@ -1,0 +1,43 @@
+name: Update Checker
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+
+on:
+  repository_dispatch:
+    types: Update
+  workflow_dispatch:
+  schedule:
+    - cron: 1 0,12 * * *
+
+jobs:
+  check:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Get Commit Hash
+        id: getHash
+        run: |
+          git clone --depth 1 $REPO_URL -b $REPO_BRANCH .
+          echo "commitHash=$(git rev-parse HEAD)" >> $GITHUB_ENV
+      - name: Compare Commit Hash
+        id: cacheHash
+        uses: actions/cache@main
+        with:
+          path: .commitHash
+          key: HEAD-${{ env.commitHash }}
+      - name: Save New Commit Hash
+        if: steps.cacheHash.outputs.cache-hit != 'true'
+        run: |
+          echo ${{ steps.getHash.outputs.commitHash }} | tee .commitHash
+      - name: Trigger build
+        if: steps.cacheHash.outputs.cache-hit != 'true'
+        uses: peter-evans/repository-dispatch@main
+        with:
+          token: ${{ secrets.RELEASES_TOKEN }}
+          event-type: Toolchain
+        - name: Delete workflow runs
+          uses: GitRML/delete-workflow-runs@main
+          with:
+            retain_days: 3
+            keep_minimum_runs: 0

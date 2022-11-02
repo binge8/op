@@ -5,7 +5,7 @@ on:
     types: lx64
   workflow_dispatch:
   schedule:
-    - cron: 00 16 * * *
+    - cron: 00 18 * * *
 
 env:
   REPO_URL: https://github.com/coolsnowwolf/lede
@@ -46,7 +46,7 @@ jobs:
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
-        cd /$GITHUB_WORKSPACE && git clone https://github.com/binge8/ybin.git
+        git clone https://github.com/binge8/ybin.git
     - name: 更新feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default

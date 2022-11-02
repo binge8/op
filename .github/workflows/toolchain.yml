@@ -1,0 +1,123 @@
+name: Toolchain
+
+on:
+  repository_dispatch:
+    types: Toolchain
+  workflow_dispatch:
+  #schedule:
+    #- cron: 00 16 * * *
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  UPLOAD_RELEASE: true
+  FILE_NAME: Toolchain
+  TZ: Asia/Shanghai
+
+jobs:
+  Build:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        PLATFORM: [rockchip/armv8, x86/64]
+
+    steps:
+      - name: 签出
+        uses: actions/checkout@main
+      - name: 编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php /etc/apt/sources.list.d /usr/local/lib/android
+          sudo -E apt-get -yqq purge $(curl -fsSL https://raw.githubusercontent.com/binge8/ybin/master/bin/del) || true
+          sudo -E apt-get -qq update
+          sudo -E apt-get -yqq install $(curl -fsSL https://raw.githubusercontent.com/binge8/ybin/master/bin/get-apt)
+          sudo -E apt-get -qq autoremove --purge
+          sudo -E apt-get -qq clean
+          sudo timedatectl set-timezone "$TZ"
+      - name: 拉取源码
+        run: |
+          df -hT $PWD
+          git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+          git clone https://github.com/binge8/ybin.git
+      - name: 更新Feeds
+        run: |
+          cd openwrt
+          echo "OPENWRTROOT=$PWD" >> $GITHUB_ENV
+          ./scripts/feeds update -a 
+          ./scripts/feeds install -a
+          #设置环境变量
+          useVersionInfo=$(git show -s --date=short --format="编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录:<br/>更新人: %an<br/>更新时间: %cd<br/>更新内容: %s<br/>哈希值: %H")
+          echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
+          echo "DATE=$(date "+%Y年%m月%d日%H时")" >> $GITHUB_ENV
+          echo "DATE1=$(date "+%Y.%m.%d")" >> $GITHUB_ENV
+      - name: 下载Packages
+        env:
+          PLATFORM: ${{ matrix.PLATFORM }}
+        run: |
+          mv ybin/config/$PLATFORM.config $OPENWRTROOT/.config
+          cd $OPENWRTROOT
+          make defconfig
+          make download -j16
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+      - name: 编译Tools
+        run: |
+          cd $OPENWRTROOT
+          echo -e "$(nproc) thread compile"
+          make tools/compile -j$(($(nproc) + 1)) || make tools/compile -j1 V=s
+      - name: 编译Toolchain
+        run: |
+          cd $OPENWRTROOT
+          echo -e "$(nproc) thread compile"
+          make toolchain/compile -j$(($(nproc) + 1)) || make toolchain/compile -j1 V=s
+          make diffconfig
+          cd $OPENWRTROOT/bin/targets/*
+          TARGET=$(basename `pwd`)
+          echo "TARGET=$TARGET" >> $GITHUB_ENV
+          cd *
+          rm *
+          SUBTARGET=$(basename `pwd`)
+          echo "SUBTARGET=$SUBTARGET" >> $GITHUB_ENV
+      - name: 清理文件
+        run: |
+          cd $OPENWRTROOT
+          make clean
+          rm -rf tmp logs .config* dl
+          ./scripts/feeds clean
+
+      - name: 制作为镜像
+        run: |
+          export FILE_NAME="toolchain-$TARGET-$SUBTARGET.img"
+          mksquashfs openwrt $FILE_NAME -force-gid 1001 -force-uid 1001 -comp xz
+          mkdir output
+          mv $FILE_NAME output
+          df -hT $PWD
+      - name: 发布release
+        if: env.UPLOAD_RELEASE == 'true'
+        uses: ncipollo/release-action@main
+        with:
+          name: ${{ env.DATE }} 🚀 Toolchain | 自动编译
+          allowUpdates: true
+          removeArtifacts: true
+          tag: 0Toolchain
+          commit: master
+          token: ${{ secrets.RELEASES_TOKEN }}
+          body: |
+            ${{ env.useVersionInfo }}
+          artifacts: output/*
+  over:
+    runs-on: ubuntu-20.04
+    needs: [Build]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: 微信推送
+        if: always()
+        run: |
+          if [ "${{ env.organize }}" = "success" ];then
+            curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
+          else
+            curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
+          fi
