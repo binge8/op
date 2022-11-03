@@ -96,8 +96,6 @@ jobs:
         uses: ncipollo/release-action@main
         with:
           name: ${{ env.DATE }} 🚀 Toolchain | 自动编译
-          omitNameDuringUpdate: true
-          omitBodyDuringUpdate: true
           allowUpdates: true
           tag: 1Toolchain
           commit: master
