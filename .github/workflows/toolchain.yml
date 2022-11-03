@@ -87,12 +87,11 @@ jobs:
           rm -rf tmp logs .config* dl
           ./scripts/feeds clean
 
-      - name: 制作为镜像
+      - name: 打包
         run: |
           export FILE_NAME="toolchain-$TARGET-$SUBTARGET.img"
-          mksquashfs openwrt $FILE_NAME -force-gid 1001 -force-uid 1001 -comp xz
-          mkdir output
-          mv $FILE_NAME output
+          tar -zcvf $FILE_NAME.tar.gz openwrt
+          mkdir output && mv $FILE_NAME.tar.gz output
           df -hT $PWD
       - name: 发布release
         if: env.UPLOAD_RELEASE == 'true'

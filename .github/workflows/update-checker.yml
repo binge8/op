@@ -9,7 +9,7 @@ on:
     types: Update
   workflow_dispatch:
   schedule:
-    - cron: 1 0,12 * * *
+    - cron: 1 */4 * * *
 
 jobs:
   check:
