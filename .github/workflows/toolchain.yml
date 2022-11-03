@@ -90,8 +90,7 @@ jobs:
       - name: 打包
         run: |
           export FILE_NAME="toolchain-$TARGET-$SUBTARGET"
-          tar -zcvf $FILE_NAME.tar.gz openwrt
-          mkdir output && mv $FILE_NAME.tar.gz output
+          mkdir output && tar -zcvf output/$FILE_NAME.tar.gz openwrt | split -b 1900M -d -a 1 - $FILE_NAME.tar.gz.
           df -hT $PWD
       - name: 发布release
         if: env.UPLOAD_RELEASE == 'true'
