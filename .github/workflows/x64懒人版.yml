@@ -95,7 +95,7 @@ jobs:
         name: ${{ env.DATE }} 🚀 x64懒人版 | 自动编译
         allowUpdates: true
         removeArtifacts: true
-        tag: 2lx64
+        tag: 3lx64
         commit: master
         token: ${{ secrets.RELEASES_TOKEN }}
         body: |

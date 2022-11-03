@@ -21,7 +21,6 @@ jobs:
       fail-fast: false
       matrix:
         PLATFORM: [rockchip/armv8, x86/64]
-
     steps:
       - name: 签出
         uses: actions/checkout@main
@@ -86,7 +85,6 @@ jobs:
           make clean
           rm -rf tmp logs .config* dl
           ./scripts/feeds clean
-
       - name: 打包
         run: |
           export FILE_NAME="toolchain-$TARGET-$SUBTARGET"
@@ -98,9 +96,10 @@ jobs:
         uses: ncipollo/release-action@main
         with:
           name: ${{ env.DATE }} 🚀 Toolchain | 自动编译
+          omitNameDuringUpdate: true
+          omitBodyDuringUpdate: true
           allowUpdates: true
-          removeArtifacts: true
-          tag: 0Toolchain
+          tag: 1Toolchain
           commit: master
           token: ${{ secrets.RELEASES_TOKEN }}
           body: |
