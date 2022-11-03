@@ -8,8 +8,8 @@ on:
     - cron: 00 16 * * *
 
 env:
-  TOOLCHAIN_TAR: x86
-  TOOLCHAIN_SUBTARGET: 64
+  TARGET: x86
+  SUBTARGET: 64
   CONFIG_FILE: ybin/bin/jx64.config
   CORE: ybin/bin/core
   DIY1_SH: ybin/bin/diy1.sh
@@ -41,9 +41,9 @@ jobs:
     - name: 拉取源码
       run: |
         df -hT $PWD
-        wget -c https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TOOLCHAIN_TAR-$TOOLCHAIN_SUBTARGET.tar.gz.0
-        wget -c https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TOOLCHAIN_TAR-$TOOLCHAIN_SUBTARGET.tar.gz.1
-        cat toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.* | tar -zxv
+        wget -c https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TARGET-$SUBTARGET.tar.gz.0
+        wget -c https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TARGET-$SUBTARGET.tar.gz.1
+        cat toolchain-$TARGET-$SUBTARGET.tar.gz.* | tar -zxv
         git clone https://github.com/binge8/ybin.git
     - name: 更新feeds
       run: |
