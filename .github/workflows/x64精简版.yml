@@ -22,7 +22,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-20.04
-
     steps:
     - name: 微信推送
       run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
@@ -42,8 +41,8 @@ jobs:
     - name: 拉取源码
       run: |
         df -hT $PWD
-        wget -c https://github.com/binge8/op/releases/download/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.0
-        wget -c https://github.com/binge8/op/releases/download/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.1
+        wget -c https://github.com/binge8/op/releases/download/0Toolchain/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.0
+        wget -c https://github.com/binge8/op/releases/download/0Toolchain/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.1
         cat toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.* | tar -zxv
         git clone https://github.com/binge8/ybin.git
     - name: 更新feeds
