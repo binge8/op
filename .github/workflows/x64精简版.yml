@@ -71,8 +71,15 @@ jobs:
     - name: 编译
       run: |
         cd openwrt
-        echo -e "$(($(nproc) + 1)) thread compile"
-        make -j$(($(nproc) + 1)) || make -j1 V=s
+        echo -e "$(nproc) thread compile"
+        make tools/compile -j$(($(nproc) + 1)) || make tools/compile -j1 V=s
+        make target/compile -j$(($(nproc) + 1)) || make target/compile -j1 V=s
+        make diffconfig
+        make package/compile -j$(($(nproc) + 1)) || make package/compile -j1 V=s
+        make package/index
+        make package/install -j$(($(nproc) + 1)) || make package/install -j1 V=s
+        make target/install -j$((($(nproc) + 1)) || make target/install -j1 V=s
+        make checksum
         echo "compile=success" >> $GITHUB_ENV
     - name: Check space usage
       if: (!cancelled())
