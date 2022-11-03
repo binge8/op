@@ -42,8 +42,8 @@ jobs:
     - name: 拉取源码
       run: |
         df -hT $PWD
+        wget -c https://github.com/binge8/op/releases/download/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.0
         wget -c https://github.com/binge8/op/releases/download/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.1
-        wget -c https://github.com/binge8/op/releases/download/toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.2
         cat toolchain-$TOOLCHAIN_TAG-$TOOLCHAIN_SUBTARGET.tar.gz.* | tar -zxv
         git clone https://github.com/binge8/ybin.git
     - name: 更新feeds
