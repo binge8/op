@@ -8,7 +8,7 @@ on:
     - cron: 00 16 * * *
 
 env:
-  TOOLCHAIN_TARGET: x86
+  TOOLCHAIN_TAR: x86
   TOOLCHAIN_SUBTARGET: 64
   CONFIG_FILE: ybin/bin/jx64.config
   CORE: ybin/bin/core
