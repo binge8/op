@@ -89,7 +89,7 @@ jobs:
 
       - name: 打包
         run: |
-          export FILE_NAME="toolchain-$TARGET-$SUBTARGET.img"
+          export FILE_NAME="toolchain-$TARGET-$SUBTARGET"
           tar -zcvf $FILE_NAME.tar.gz openwrt
           mkdir output && mv $FILE_NAME.tar.gz output
           df -hT $PWD
