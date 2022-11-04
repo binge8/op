@@ -46,6 +46,7 @@ jobs:
           echo "OPENWRTROOT=$PWD" >> $GITHUB_ENV
           ./scripts/feeds update -a 
           ./scripts/feeds install -a
+          rm -rf feeds/luci/applications/luci-app-dockerman feeds/luci/applications/luci-app-pushbot
           #设置环境变量
           useVersionInfo=$(git show -s --date=short --format="编译前的最后一次[➦主源码](https://github.com/coolsnowwolf/lede)更新记录:<br/>更新人: %an<br/>更新时间: %cd<br/>更新内容: %s<br/>哈希值: %H")
           echo "useVersionInfo=$useVersionInfo" >> $GITHUB_ENV
