@@ -12,12 +12,13 @@ env:
   REPO_BRANCH: master
   CONFIG_FILE: ybin/bin/jarmv8.config
   DIY1_SH: ybin/bin/diy1.sh
-  DIY3_SH: ybin/bin/diy3.sh
+  DIY2_SH: ybin/bin/diy2.sh
   FEEDS_CONF: ybin/bin/feeds
   UPLOAD_RELEASE: true
   DB: true
   TZ: Asia/Shanghai
   FILE_NAME: armv8精简版
+  TT: armv8
 
 jobs:
   build:
@@ -54,9 +55,9 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $DIY3_SH
+        chmod +x $DIY2_SH
         cd openwrt
-        $GITHUB_WORKSPACE/$DIY3_SH
+        $GITHUB_WORKSPACE/$DIY2_SH
         sed -i 's/OpenWrt/Bin AutoBuild ${{ env.DATE1 }} @ OpenWrt/g' package/lean/default-settings/files/zzz-default-settings
         sed -i "s|https.*/OpenWrt|https://github.com/binge8/op|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic
         sed -i "s|ARMv8|jarmv8|g" package/openwrt-packages/luci-app-amlogic/luci-app-amlogic/root/etc/config/amlogic

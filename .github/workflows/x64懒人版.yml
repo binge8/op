@@ -18,6 +18,7 @@ env:
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
   FILE_NAME: x64懒人版
+  TT: x64
 
 jobs:
   build:
@@ -58,6 +59,7 @@ jobs:
         cd openwrt
         $GITHUB_WORKSPACE/$DIY2_SH
         sed -i 's/OpenWrt/Bin AutoBuild ${{ env.DATE1 }} @ OpenWrt/g' package/lean/default-settings/files/zzz-default-settings
+        sed -i 's/IMG_PREFIX:=/IMG_PREFIX:=k$(LINUX_VERSION)-/g' include/image.mk
     - name: 下载软件包
       run: |
         cd openwrt
