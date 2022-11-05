@@ -76,14 +76,14 @@ jobs:
       if: (!cancelled())
       run: df -hT
     - name: 整理编译文件
-      if: env.compile = 'success'
+      if: env.compile == 'success'
       run: |
         rm -rf $OPENWRTROOT/bin/targets/x86/64/packages
         cd $OPENWRTROOT/bin/targets/*/*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "organize=success" >> $GITHUB_ENV
     - name: 发布release
-      if: env.UPLOAD_RELEASE = 'true' && env.organize = 'success'
+      if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
       uses: ncipollo/release-action@main
       with:
         name: $DATE 🚀 x64精简版 | 自动编译
