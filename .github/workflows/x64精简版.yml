@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: 微信推送
-      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
+      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME开始","content":"$FILE_NAME开始编译","template":"json"}' http://www.pushplus.plus/send
     - name: Checkout
       uses: actions/checkout@main
     - name: 搭建编译环境
@@ -41,74 +41,65 @@ jobs:
     - name: 拉取源码
       run: |
         df -hT $PWD
-        wget -cq https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TARGET-$SUBTARGET.tar.gz.0
-        wget -cq https://github.com/binge8/op/releases/download/1Toolchain/toolchain-$TARGET-$SUBTARGET.tar.gz.1
-        cat toolchain-$TARGET-$SUBTARGET.tar.gz.* | tar -zxv
+        git clone $REPO_URL -b $REPO_BRANCH openwrt
         git clone https://github.com/binge8/ybin.git
+        cd openwrt && echo "OPENWRTROOT=$PWD" >> $GITHUB_ENV
     - name: 更新feeds
       run: |
-        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
+        [ -e $FEEDS_CONF ] && mv $FEEDS_CONF $OPENWRTROOT/feeds.conf.default
         chmod +x $DIY1_SH
-        cd openwrt
-        git pull
+        cd $OPENWRTROOT
         $GITHUB_WORKSPACE/$DIY1_SH
     - name: 自定义配置
       run: |
-        [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        [ -e $CORE ] && mv $CORE openwrt/package/lean/autocore/files/x86/autocore
+        [ -e files ] && mv files $OPENWRTROOT/files
+        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE $OPENWRTROOT/.config
+        [ -e $CORE ] && mv $CORE $OPENWRTROOT/package/lean/autocore/files/x86/autocore
         chmod +x $DIY2_SH
-        cd openwrt
+        cd $OPENWRTROOT
         $GITHUB_WORKSPACE/$DIY2_SH
-        sed -i 's/OpenWrt/Bin AutoBuild ${{ env.DATE1 }} @ OpenWrt/g' package/lean/default-settings/files/zzz-default-settings
+        sed -i 's/OpenWrt/Bin AutoBuild $DATE1 @ OpenWrt/g' package/lean/default-settings/files/zzz-default-settings
     - name: 下载软件包
       run: |
-        cd openwrt
+        cd $OPENWRTROOT
         make defconfig
-        make download -j8
+        make download -j16
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
     - name: 编译
       run: |
-        cd openwrt
+        cd $OPENWRTROOT
         echo -e "$(nproc) thread compile"
-        make tools/compile -j$(($(nproc) + 1)) || make tools/compile -j1 V=s
-        make target/compile -j$(($(nproc) + 1)) || make target/compile -j1 V=s
-        make diffconfig
-        make package/compile -j$(($(nproc) + 1)) || make package/compile -j1 V=s
-        make package/index
-        make package/install -j$(($(nproc) + 1)) || make package/install -j1 V=s
-        make target/install -j$((($(nproc) + 1)) || make target/install -j1 V=s
-        make checksum
+        make -j$(($(nproc) + 1)) || make -j1 V=s
         echo "compile=success" >> $GITHUB_ENV
     - name: Check space usage
       if: (!cancelled())
       run: df -hT
     - name: 整理编译文件
-      if: env.compile == 'success'
+      if: $compile == 'success'
       run: |
-        rm -rf openwrt/bin/targets/x86/64/packages
-        cd openwrt/bin/targets/*/*
+        rm -rf $OPENWRTROOT/bin/targets/x86/64/packages
+        cd $OPENWRTROOT/bin/targets/*/*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "organize=success" >> $GITHUB_ENV
     - name: 发布release
-      if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
+      if: $UPLOAD_RELEASE == 'true' && $organize == 'success'
       uses: ncipollo/release-action@main
       with:
-        name: ${{ env.DATE }} 🚀 x64精简版 | 自动编译
+        name: $DATE 🚀 x64精简版 | 自动编译
         allowUpdates: true
         removeArtifacts: true
         tag: 5jx64
         commit: master
         token: ${{ secrets.RELEASES_TOKEN }}
         body: |
-          ${{ env.useVersionInfo }}
-        artifacts: ${{ env.FIRMWARE }}/*
+          $useVersionInfo
+        artifacts: $FIRMWARE/*
     - name: 微信推送
       if: always()
       run: |
-        if [ "${{ env.organize }}" = "success" ];then
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
+        if [ "$organize" = "success" ];then
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME成功","content":"$FILE_NAME发布成功","template":"json"}' http://www.pushplus.plus/send
         else
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME失败","content":"$FILE_NAME发布失败","template":"json"}' http://www.pushplus.plus/send
         fi
