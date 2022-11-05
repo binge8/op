@@ -41,7 +41,6 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
     - name: 克隆源代码
       id: source
-      working-directory: /workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
