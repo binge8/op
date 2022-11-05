@@ -8,8 +8,8 @@ on:
     - cron: 00 16 * * *
 
 env:
-  TARGET: x86
-  SUBTARGET: 64
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
   CONFIG_FILE: ybin/bin/jx64.config
   CORE: ybin/bin/core
   DIY1_SH: ybin/bin/diy1.sh
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: 微信推送
-      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME开始","content":"$FILE_NAME开始编译","template":"json"}' http://www.pushplus.plus/send
+      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)开始","content":"$(FILE_NAME)开始编译","template":"json"}' http://www.pushplus.plus/send
     - name: Checkout
       uses: actions/checkout@main
     - name: 搭建编译环境
@@ -76,14 +76,14 @@ jobs:
       if: (!cancelled())
       run: df -hT
     - name: 整理编译文件
-      if: env.compile == 'success'
+      if: $(compile) == 'success'
       run: |
         rm -rf $OPENWRTROOT/bin/targets/x86/64/packages
         cd $OPENWRTROOT/bin/targets/*/*
         echo "FIRMWARE=$PWD" >> $GITHUB_ENV
         echo "organize=success" >> $GITHUB_ENV
     - name: 发布release
-      if: env.UPLOAD_RELEASE == 'true' && env.organize == 'success'
+      if: $(UPLOAD_RELEASE) == 'true' && $(organize) == 'success'
       uses: ncipollo/release-action@main
       with:
         name: $DATE 🚀 x64精简版 | 自动编译
@@ -94,12 +94,12 @@ jobs:
         token: ${{ secrets.RELEASES_TOKEN }}
         body: |
           $useVersionInfo
-        artifacts: $FIRMWARE/*
+        artifacts: $(FIRMWARE)/*
     - name: 微信推送
       if: always()
       run: |
         if [ "$organize" = "success" ];then
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME成功","content":"$FILE_NAME发布成功","template":"json"}' http://www.pushplus.plus/send
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)成功","content":"$(FILE_NAME)发布成功","template":"json"}' http://www.pushplus.plus/send
         else
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$FILE_NAME失败","content":"$FILE_NAME发布失败","template":"json"}' http://www.pushplus.plus/send
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)失败","content":"$(FILE_NAME)发布失败","template":"json"}' http://www.pushplus.plus/send
         fi

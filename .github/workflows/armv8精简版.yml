@@ -25,7 +25,7 @@ jobs:
 
     steps:   
     - name: 微信推送
-      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}开始","content":"${{ env.FILE_NAME }}开始编译","template":"json"}' http://www.pushplus.plus/send
+      run: curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)开始","content":"$(FILE_NAME)开始编译","template":"json"}' http://www.pushplus.plus/send
     - name: Checkout
       uses: actions/checkout@main
     - name: 搭建编译环境
@@ -39,15 +39,12 @@ jobs:
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
-        sudo mkdir -p /workdir
-        sudo chown $USER:$GROUPS /workdir
     - name: 克隆源代码
-      working-directory: /workdir
       run: |
         df -hT $PWD
         git clone $REPO_URL -b $REPO_BRANCH openwrt
-        ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
         git clone https://github.com/binge8/ybin.git
+        cd openwrt && echo "OPENWRTROOT=$PWD" >> $GITHUB_ENV
     - name: 更新feeds
       run: |
         [ -e $FEEDS_CONF ] && mv $FEEDS_CONF openwrt/feeds.conf.default
@@ -103,8 +100,8 @@ jobs:
     - name: 微信推送
       if: always()
       run: |
-        if [ "${{ env.compile }}" = "success" ];then
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}成功","content":"${{ env.FILE_NAME }}发布成功","template":"json"}' http://www.pushplus.plus/send
+        if [ "$(compile)" = "success" ];then
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)成功","content":"$(FILE_NAME)发布成功","template":"json"}' http://www.pushplus.plus/send
         else
-          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"${{ env.FILE_NAME }}失败","content":"${{ env.FILE_NAME }}发布失败","template":"json"}' http://www.pushplus.plus/send
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"$(FILE_NAME)失败","content":"$(FILE_NAME)发布失败","template":"json"}' http://www.pushplus.plus/send
         fi
