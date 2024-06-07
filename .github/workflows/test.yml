@@ -1,0 +1,110 @@
+name: test
+
+on:
+  repository_dispatch:
+    types: test
+  workflow_dispatch:
+  #schedule:
+  #  - cron: 00 16 * * *
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  APT: scripts/apt
+  UPLOAD_RELEASE: false
+  FIRENAME: jx64
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout
+      uses: actions/checkout@main
+    - name: 检查服务器配置
+      run: |
+        echo "已知CPU型号（降序）：7763,8370C,8272CL,8171M,E5系列"
+        echo "--------------------------CPU信息--------------------------"
+        echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+        echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+        echo "--------------------------硬盘信息--------------------------"
+        echo -e "$(df -hT)"
+    - name: 清理系统
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+    - name: 搭建编译环境
+      env:
+        DEBIAN_FRONTEND: noninteractive
+      run: |
+        sudo apt-get update
+        sudo -E apt-get -y full-upgrade
+        sudo -E apt-get -y install $(cat scripts/apt)
+        sudo -E systemctl daemon-reload
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/ppa
+        sudo apt-get install -y gcc-13
+        sudo apt-get install -y g++-13
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 60 --slave /usr/bin/g++ g++ /usr/bin/g++-13
+        sudo -E apt-get -y autoremove --purge
+        sudo -E apt-get clean
+        sudo -E timedatectl set-timezone "Asia/Shanghai"
+    - name: 拉取源码及配置
+      run: |
+        git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+        wget --no-check-certificate https://ac.1688xw.cn/diy.sh https://ac.1688xw.cn/jx64.config
+        chmod +x diy.sh jx64.config
+    - name: 缓存
+      id: cache
+      uses: stupidloud/cachewrtbuild@main
+      with:
+        skip_saving: 'true'
+        ccache: 'true'
+        mixkey: 'x64'
+        prefix: '${{ github.workspace }}/openwrt'
+    - name: 自定义配置
+      run: |
+        wget --no-check-certificate https://ac.1688xw.cn/fstab https://ac.1688xw.cn/zerotier
+        mkdir -p openwrt/files/etc/config
+        [ -e fstab ] && mv -f fstab openwrt/files/etc/config
+        [ -e zerotier ] && mv -f zerotier openwrt/files/etc/config
+        [ -e diy.sh ] && mv -f diy.sh openwrt
+        cd openwrt && . diy.sh
+    - name: 下载软件包
+      run: |
+        [ -e ${{ env.FIRENAME }}.config ] && mv -f ${{ env.FIRENAME }}.config openwrt/.config
+        cd openwrt
+        make defconfig
+        make download -j16
+        find dl -size -1024c -exec ls -l {} \;
+        find dl -size -1024c -exec rm -f {} \;
+    - name: 编译
+      run: |
+        cd openwrt
+        echo -e "$(nproc) thread compile"
+        make -j$[`nproc`+1] || make -j1 V=s
+        echo "compile=success" >> $GITHUB_ENV
+    - name: 检查剩余空间
+      if: always()
+      run: | 
+        echo "--------------------------硬盘信息--------------------------"
+        echo -e "$(df -hT)"
+    - name: Upload firmware directory
+      if: env.compile == 'success'
+      uses: actions/upload-artifact@main
+      with:
+        name: test
+        path: openwrt/bin/targets/x86/64/*combined.img.gz
+    - name: 微信推送
+      if: always()
+      run: |
+        if [ "${{ env.compile }}" = "success" ];then
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"测试版编译成功","content":"测试版编译成功B","template":"json"}' http://www.pushplus.plus/send
+        else 
+          curl -H "Content-Type:application/json" -X POST -d '{"token":"${{ secrets.pushbot }}","title":"测试版编译失败","content":"测试版编译失败B","template":"json"}' http://www.pushplus.plus/send
+        fi
