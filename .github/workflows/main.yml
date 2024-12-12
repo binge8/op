@@ -70,7 +70,6 @@ jobs:
         cd scripts && wget --no-check-certificate https://ac.cxw28.cn/diy.sh https://ac.cxw28.cn/${FIRENAME::1}g.config
         cat ${{ env.FIRENAME1 }} ${FIRENAME::1}g.config > op.config
         chmod +x diy.sh && chmod +x op.config
-        ls -l
     - name: 缓存
       id: cache
       uses: stupidloud/cachewrtbuild@main
@@ -82,9 +81,7 @@ jobs:
     - name: 自定义配置
       run: |
         mv -f scripts/diy.sh openwrt/diy.sh && mv -f scripts/op.config openwrt/.config
-        cd openwrt
-        ls -a
-        . diy.sh
+        cd openwrt && . diy.sh
     - name: 下载软件包
       run: |
         cd openwrt
