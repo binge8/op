@@ -86,7 +86,7 @@ jobs:
     - name: 下载软件包
       run: |
         cd openwrt
-        make defconfig
+        #make defconfig
         make download -j16
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
