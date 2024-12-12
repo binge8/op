@@ -83,7 +83,7 @@ jobs:
       run: |
         mv -f scripts/diy.sh openwrt/diy.sh && mv -f scripts/op.config openwrt/.config
         cd openwrt
-        ls -l
+        ls -a
         . diy.sh
     - name: 下载软件包
       run: |
