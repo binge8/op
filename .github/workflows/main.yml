@@ -81,6 +81,7 @@ jobs:
     - name: 自定义配置
       run: |
         mv -f scripts/diy.sh openwrt/diy.sh && mv -f scripts/op.config openwrt/.config
+        ls -a
         cd openwrt && . diy.sh
     - name: 下载软件包
       run: |
