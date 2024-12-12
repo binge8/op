@@ -70,6 +70,7 @@ jobs:
         cd scripts && wget --no-check-certificate https://ac.cxw28.cn/diy.sh https://ac.cxw28.cn/${FIRENAME::1}g.config
         cat ${{ env.FIRENAME1 }} <(echo) ${FIRENAME::1}g.config > op.config
         chmod +x diy.sh && chmod +x op.config
+        ls -a
     - name: 缓存
       id: cache
       uses: stupidloud/cachewrtbuild@main
