@@ -67,7 +67,9 @@ jobs:
     - name: 拉取源码及配置
       run: |
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
-        wget --no-check-certificate https://ac.cxw28.cn/diy.sh https://ac.cxw28.cn/${FIRENAME::1}g.config
+        cd scripts && wget --no-check-certificate https://ac.cxw28.cn/diy.sh https://ac.cxw28.cn/${FIRENAME::1}g.config
+        cat ${{ env.FIRENAME1 }} <(echo) ${FIRENAME::1}g.config > op.config
+        chmod +x diy.sh && chmod +x op.config
     - name: 缓存
       id: cache
       uses: stupidloud/cachewrtbuild@main
@@ -78,10 +80,7 @@ jobs:
         prefix: '${{ github.workspace }}/openwrt'
     - name: 自定义配置
       run: |
-        cp -p scripts/${{ env.FIRENAME1 }} ${{ env.FIRENAME1 }}.config
-        cat ${{ env.FIRENAME1 }}.config <(echo) ${FIRENAME::1}g.config > op.config
-        [ -e diy.sh ] && chmod +x diy.sh && mv -f diy.sh openwrt
-        [ -e op.config ] && chmod +x op.config && mv -f op.config openwrt/.config
+        mv -f scripts/diy.sh openwrt/diy.sh && mv -f scripts/op.config openwrt/.config
         cd openwrt && . diy.sh
     - name: 下载软件包
       run: |
