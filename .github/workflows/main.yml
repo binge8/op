@@ -68,7 +68,7 @@ jobs:
       run: |
         git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
         cd scripts && wget --no-check-certificate https://ac.cxw28.cn/diy.sh https://ac.cxw28.cn/${FIRENAME::1}g.config
-        cat ${{ env.FIRENAME1 }} <(echo) ${FIRENAME::1}g.config > op.config
+        cat ${{ env.FIRENAME1 }} ${FIRENAME::1}g.config > op.config
         chmod +x diy.sh && chmod +x op.config
         ls -l
     - name: 缓存
