@@ -9,7 +9,7 @@ env:
   REPO_BRANCH_packages: master
   REPO_PATH_packages: "packages"
   REPO_URL_luci: https://github.com/coolsnowwolf/luci
-  REPO_BRANCH_luci: openwrt-23.05
+  REPO_BRANCH_luci: master
   REPO_PATH_luci: "luci"
   REPO_URL_pw: https://github.com/xiaorouji/openwrt-passwall
   REPO_BRANCH_pw: main
