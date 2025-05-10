@@ -98,8 +98,8 @@ jobs:
         echo -e "$(df -hT)"
         rm -rf openwrt/build_dir openwrt/staging_dir openwrt/tmp openwrt/dl openwrt/package openwrt/feeds
         cd openwrt/bin/targets && ls -a
-        cd openwrt/bin/targets/* && ls -a
-        cd openwrt/bin/targets/*/* && ls -a
+        cd * && ls -a
+        cd * && ls -a
     - name: armv8打包镜像
       if: env.compile == 'success' && env.FIRENAME1 == 'armv8'
       uses: unifreq/openwrt_packit@master
