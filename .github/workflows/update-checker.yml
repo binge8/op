@@ -26,12 +26,11 @@ jobs:
   check:
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@main
       - name: 获取Hash
         id: getHash
         run: |
-          ls -a
-          # 安装python
-          #sudo apt-get update -qq > /dev/null && sudo apt-get install -yqq python3 > /dev/null
           # 获取lede_Hash
           git clone --depth 1 $REPO_URL_lede -b $REPO_BRANCH_lede $REPO_PATH_lede
           cd $REPO_PATH_lede
@@ -69,9 +68,8 @@ jobs:
             echo "STATUS=Lean无更新，暂停缓存" >> $GITHUB_ENV
           else
             echo "STATUS=Lean有更新，开始缓存" >> $GITHUB_ENV
-            #curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
+            curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
           fi
-          cd op && ls -a
       - name: 删除运行记录
         if: always()
         uses: Mattraks/delete-workflow-runs@v2
@@ -92,6 +90,4 @@ jobs:
             状态: ${{ env.STATUS }}
           HTTPS_PROXY: "${{ secrets.PROXY_URL }}"  # 代理（可选）
         run: |
-          # pip3 install --user requests
-          #chmod +x ${GITHUB_WORKSPACE}/scripts/wecom_notify.py
           python3 scripts/notify.py
