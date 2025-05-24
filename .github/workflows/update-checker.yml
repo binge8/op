@@ -14,7 +14,6 @@ env:
   REPO_URL_pw: https://github.com/xiaorouji/openwrt-passwall
   REPO_BRANCH_pw: main
   REPO_PATH_pw: "openwrt-passwall/luci-app-passwall"
-  NOTIFY: scripts/wecom_notify.py
 
 on:
   repository_dispatch:
@@ -98,5 +97,4 @@ jobs:
         run: |
           # pip3 install --user requests
           #chmod +x ${GITHUB_WORKSPACE}/scripts/wecom_notify.py
-          cp -p scripts/wecom_notify.py wecom_notify.py
-          python3 wecom_notify.py
+          python3 notify.py
