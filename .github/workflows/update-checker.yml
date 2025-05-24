@@ -30,7 +30,7 @@ jobs:
         id: getHash
         run: |
           # 安装python
-          sudo apt-get update -qq > /dev/null && sudo apt install -yqq python3 python3-pip > /dev/null
+          sudo apt-get update -qq > /dev/null && sudo apt install -yqq python3 > /dev/null
           # 获取lede_Hash
           git clone --depth 1 $REPO_URL_lede -b $REPO_BRANCH_lede $REPO_PATH_lede
           cd $REPO_PATH_lede
