@@ -93,5 +93,5 @@ jobs:
           HTTPS_PROXY: "${{ secrets.PROXY_URL }}"  # 代理（可选）
         run: |
           # pip3 install --user requests
-          #chmod +x ${GITHUB_WORKSPACE}/scripts/wecom_notify.py
+          chmod +x ${GITHUB_WORKSPACE}/scripts/wecom_notify.py
           python3 ${GITHUB_WORKSPACE}/scripts/wecom_notify.py
