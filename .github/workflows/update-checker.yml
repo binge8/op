@@ -29,6 +29,7 @@ jobs:
       - name: 获取Hash
         id: getHash
         run: |
+          ls -a
           # 安装python
           #sudo apt-get update -qq > /dev/null && sudo apt-get install -yqq python3 > /dev/null
           # 获取lede_Hash
@@ -68,7 +69,7 @@ jobs:
             echo "STATUS=Lean无更新，暂停缓存" >> $GITHUB_ENV
           else
             echo "STATUS=Lean有更新，开始缓存" >> $GITHUB_ENV
-            curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
+            #curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
           fi
       - name: 删除运行记录
         if: always()
