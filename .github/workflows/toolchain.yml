@@ -99,5 +99,4 @@ jobs:
             状态: ${{ env.STATUS }}
           HTTPS_PROXY: "${{ secrets.PROXY_URL }}"  # 代理（可选）
         run: |
-          pip3 install requests
-          python3 scripts/wecom_notify.py
+          python3 scripts/notify.py
