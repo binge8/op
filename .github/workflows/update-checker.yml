@@ -1,0 +1,94 @@
+name: Update Checker
+
+env:
+  # Lean源码
+  REPO_URL_lede: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH_lede: master
+  REPO_PATH_lede: "lede"
+  REPO_URL_packages: https://github.com/coolsnowwolf/packages
+  REPO_BRANCH_packages: master
+  REPO_PATH_packages: "packages"
+  REPO_URL_luci: https://github.com/coolsnowwolf/luci
+  REPO_BRANCH_luci: openwrt-23.05
+  REPO_PATH_luci: "luci"
+  REPO_URL_pw: https://github.com/xiaorouji/openwrt-passwall
+  REPO_BRANCH_pw: main
+  REPO_PATH_pw: "openwrt-passwall/luci-app-passwall"
+
+on:
+  repository_dispatch:
+    types: Update-Lean
+  workflow_dispatch:
+  #schedule:
+  #  - cron: 58 15 * * *
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 获取Hash
+        id: getHash
+        run: |
+          # 安装python
+          sudo apt update -qq > /dev/null && sudo apt install -yqq python3 python3-pip > /dev/null
+          # 获取lede_Hash
+          git clone --depth 1 $REPO_URL_lede -b $REPO_BRANCH_lede $REPO_PATH_lede
+          cd $REPO_PATH_lede
+          echo "commitHash_lede=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          cd ..
+          # 获取packages_Hash
+          git clone --depth 1 $REPO_URL_packages -b $REPO_BRANCH_packages $REPO_PATH_packages
+          cd $REPO_PATH_packages
+          echo "commitHash_packages=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          cd ..
+          # 获取luci_Hash
+          git clone --depth 1 $REPO_URL_luci -b $REPO_BRANCH_luci $REPO_PATH_luci
+          cd $REPO_PATH_luci
+          echo "commitHash_luci=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          cd ..
+          # 获取pw_Hash
+          git clone --depth 1 $REPO_URL_pw -b $REPO_BRANCH_pw $REPO_PATH_pw
+          cd $REPO_PATH_pw
+          echo "commitHash_pw=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      - name: 整理Hash
+        id: setHash
+        run: |
+          echo "commitHash=${{ steps.getHash.outputs.commitHash_lede }}-${{ steps.getHash.outputs.commitHash_packages }}-${{ steps.getHash.outputs.commitHash_luci }}-${{ steps.getHash.outputs.commitHash_pw }}" >> $GITHUB_OUTPUT
+      - name: 比较Hash
+        id: cacheHash
+        uses: actions/cache@main
+        with:
+          path: .commitHash
+          key: HEAD-${{ steps.setHash.outputs.commitHash }}
+      - name: 保存Hash
+        if: steps.cacheHash.outputs.cache-hit != 'true'
+        run: |
+          echo ${{ steps.setHash.outputs.commitHash }} | tee .commitHash
+          if [ "${{steps.cacheHash.outputs.cache-hit}}" = "true" ];then
+            echo "STATUS=Lean无更新，暂停缓存" >> $GITHUB_ENV
+          else
+            echo "STATUS=Lean有更新，开始缓存" >> $GITHUB_ENV
+            curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
+          fi
+      - name: 删除运行记录
+        if: always()
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.RELEASES_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 3
+          keep_minimum_runs: 0
+      - name: 企业微信应用消息推送
+        if: always()
+        env:
+          WECOM_CORPID: ${{ secrets.WECOM_CORPID }}
+          WECOM_CORPSECRET: ${{ secrets.WECOM_CORPSECRET }}
+          WECOM_AGENTID: ${{ secrets.WECOM_AGENTID }}
+          WECOM_CONTENT: |
+            GitHub Action 通知
+            仓库: ${{ github.repository }}
+            状态: ${{ STATUS }}
+          HTTPS_PROXY: "${{ PROXY_URL }}"  # 代理（可选）
+        run: |
+          pip3 install requests
+          python3 scripts/wecom_notify.py
