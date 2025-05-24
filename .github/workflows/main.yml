@@ -162,8 +162,8 @@ jobs:
           WECOM_CONTENT: |
             GitHub Action 通知
             仓库: ${{ github.repository }}
-            状态: ${{ STATUS }}
-          HTTPS_PROXY: "${{ PROXY_URL }}"  # 代理（可选）
+            状态: ${{ env.STATUS }}
+          HTTPS_PROXY: "${{ secrets.PROXY_URL }}"  # 代理（可选）
         run: |
           pip3 install requests
           python3 scripts/wecom_notify.py
