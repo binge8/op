@@ -123,17 +123,13 @@ jobs:
               cp openwrt/bin/targets/*/*/config.buildinfo ${{ env.PACKAGED_OUTPUTPATH }}
               echo "STATUS=${{ env.FIRENAME2 }}编译成功" >> $GITHUB_ENV
               if [ "${{ env.PACKAGED_STATUS }}" = "success" ]; then
-              delimiter="EOF_$(openssl rand -hex 6)"
-              cat << ${delimiter} >> ${GITHUB_ENV}
-              STATUS1=
-                    ${{ env.FIRENAME2 }}打包成功
-              ${delimiter}
+                STATUS1="content1=
+                      ${{ env.FIRENAME2 }}打包成功"
+                echo "STATUS1=$STATUS1" >> ${GITHUB_ENV}
               else
-              delimiter="EOF_$(openssl rand -hex 6)"
-              cat << ${delimiter} >> ${GITHUB_ENV}
-              STATUS1=
-                    ${{ env.FIRENAME2 }}打包成功
-              ${delimiter}
+                STATUS1="content1=
+                      ${{ env.FIRENAME2 }}打包成功"
+                echo "STATUS1=$STATUS1" >> ${GITHUB_ENV}
               fi
             fi
           fi
