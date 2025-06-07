@@ -1,0 +1,111 @@
+name: Update-Check
+
+on:
+  workflow_dispatch: # 允许手动触发
+  repository_dispatch:
+    types: Update-Check
+  #schedule:
+    #- cron: '0 0 * * *' # 每天 UTC 时间 00:00 自动运行
+
+jobs:
+  Update-Check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: 获取Hash
+        id: getHash
+        run: |
+          # 创建临时目录
+          TMP_DIR=$(mktemp -d) || { echo "✗ 错误: 创建临时目录失败"; exit 1; }
+          trap 'rm -rf "$TMP_DIR"' EXIT
+          
+          # 从环境变量获取仓库列表
+          mapfile -t REPOS <<< "${{ secrets.REPO_LIST }}"
+          
+          # 存储所有commit ID的数组
+          COMMIT_IDS=()
+          
+          # 处理每个仓库
+          for entry in "${REPOS[@]}"; do
+            # 分割用户名/仓库名和分支
+            IFS=':' read -r REPO_PATH BRANCH <<< "$entry"
+            
+            # 验证输入格式
+            if [[ -z "$REPO_PATH" || -z "$BRANCH" ]]; then
+              echo "✗ 错误: 无效的仓库格式 '$entry'，应为 user/repo:branch" >&2
+              continue
+            fi
+          
+            # 直接使用仓库路径构建URL（关键修正）
+            REPO_URL="https://github.com/${REPO_PATH}.git"
+            # 创建安全的临时目录名称（替换/为-）
+            SAFE_REPO_NAME=$(echo "$REPO_PATH" | tr '/' '-')
+          
+            echo "正在处理: $REPO_PATH ($BRANCH 分支)"
+            echo "克隆URL: $REPO_URL"
+          
+            # 浅克隆仓库
+            git clone --quiet --depth 1 --branch "$BRANCH" "$REPO_URL" "$TMP_DIR/$SAFE_REPO_NAME" 2>/dev/null
+          
+            if [ $? -eq 0 ]; then
+              # 获取简短Commit ID (7字符)
+              COMMIT_ID=$(git -C "$TMP_DIR/$SAFE_REPO_NAME" rev-parse --short HEAD 2>/dev/null)
+              if [ -n "$COMMIT_ID" ]; then
+                COMMIT_IDS+=("$COMMIT_ID")
+                echo "✓ 成功获取: $COMMIT_ID"
+              else
+                echo "✗ 错误: 无法获取 $REPO_PATH 的 Commit ID" >&2
+              fi
+            else
+              echo "✗ 错误: $REPO_PATH 分支 $BRANCH 获取失败" >&2
+            fi
+          done
+          
+          # 写入文件
+          echo "commitHash=$(IFS='+'; echo "${COMMIT_IDS[*]}")" >> $GITHUB_OUTPUT
+
+      - name: 比较Hash
+        id: cacheHash
+        uses: actions/cache@main
+        with:
+          path: .commitHash
+          key: HEAD-${{ steps.getHash.outputs.commitHash }}
+
+      - name: 更新Hash
+        if: always()
+        run: |
+          if [ "${{steps.cacheHash.outputs.cache-hit}}" = "true" ];then
+            echo "STATUS=✅ 源码无更新 | 暂停缓存" >> $GITHUB_ENV
+          else
+            if [ -n "${{ steps.getHash.outputs.commitHash }}" ];then
+              echo "STATUS=✅ 源码有更新 | 开始缓存" >> $GITHUB_ENV
+              curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "Toolchain"}'
+              echo ${{ steps.getHash.outputs.commitHash }} | tee .commitHash
+            else
+              echo "STATUS=❌ 源码更新检测失败" >> $GITHUB_ENV
+            fi
+          fi
+
+      - name: 删除运行记录
+        if: always()
+        uses: Mattraks/delete-workflow-runs@v2
+        with:
+          token: ${{ secrets.RELEASES_TOKEN }}
+          repository: ${{ github.repository }}
+          retain_days: 5
+          keep_minimum_runs: 3
+      - name: 企业微信应用消息推送
+        if: always()
+        env:
+          CORP_ID: ${{ secrets.CORP_ID }}
+          CORP_SECRET: ${{ secrets.CORP_SECRET }}
+          AGENT_ID: ${{ secrets.AGENT_ID }}
+          TEXT:  |
+            🚀GitHub Action 通知
+            
+            仓库: ${{ github.repository }}
+            -----------------------------
+            ${{ env.STATUS }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}  # 代理（可选）
+        run: |
+          wget --no-check-certificate https://ac.cxw28.cn/notify.py && chmod +x notify.py
+          python3 notify.py
