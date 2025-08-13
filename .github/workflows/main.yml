@@ -1,0 +1,180 @@
+# 公用编译核心
+name: main
+
+on:
+  workflow_call:
+    inputs:
+      FIRENAME:
+        required: true
+        type: string
+      FIRENAME1:
+        required: true
+        type: string
+      REPO_URL:
+        required: true
+        type: string
+      REPO_BRANCH:
+        required: true
+        type: string
+      UPLOAD_RELEASE:
+        required: true
+        type: string
+
+env:
+  FIRENAME: ${{inputs.FIRENAME}}
+  FIRENAME1: ${{inputs.FIRENAME1}}
+  REPO_URL: ${{inputs.REPO_URL}}
+  REPO_BRANCH: ${{inputs.REPO_BRANCH}}
+  UPLOAD_RELEASE: ${{inputs.UPLOAD_RELEASE}}
+
+jobs:
+  builds:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@main
+      - name: 检查服务器配置
+        run: |
+          echo "已知CPU型号（降序）：7763,8370C,8272CL,8171M,E5系列"
+          echo "--------------------------CPU信息--------------------------"
+          echo "CPU物理数量:$(cat /proc/cpuinfo| grep "physical id"| sort| uniq| wc -l)"
+          echo -e "CPU核心及版本信息：$(cat /proc/cpuinfo | grep name | cut -f2 -d: | uniq -c) \n"
+          echo "--------------------------硬盘信息--------------------------"
+          echo -e "$(df -hT)"
+      - name: 清理系统
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      - name: 搭建编译环境
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y install $(cat scripts/apt)
+          sudo -E systemctl daemon-reload
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          sudo ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+          echo "Asia/Shanghai" | sudo tee /etc/timezone
+          sudo dpkg-reconfigure --frontend noninteractive tzdata
+      - name: 拉取源码及配置文件
+        run: |
+          git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+          wget --no-check-certificate https://ac.cxw28.cn/diy.sh
+          chmod +x diy.sh && mv -f diy.sh openwrt/diy.sh
+      - name: 缓存
+        id: cache
+        uses: stupidloud/cachewrtbuild@main
+        with:
+          skip_saving: 'true'
+          ccache: 'true'
+          mixkey: '${{ env.FIRENAME1 }}'
+          prefix: '${{ github.workspace }}/openwrt'
+      - name: 自定义配置
+        run: |
+          cd openwrt
+          . diy.sh
+      - name: 下载软件包
+        run: |
+          cd openwrt
+          make defconfig
+          make download -j16
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+      - name: 编译
+        id: compile
+        run: |
+          cd openwrt
+          echo -e "$(nproc) thread compile"
+          make -j$[`nproc`+1] || make -j1 V=s
+      - name: 检查剩余空间
+        if: ${{ always() }}
+        run: | 
+          echo "--------------------------硬盘信息--------------------------"
+          echo -e "$(df -hT)"
+          rm -rf openwrt/build_dir openwrt/staging_dir openwrt/tmp openwrt/dl openwrt/package openwrt/feeds
+      - name: armv8打包镜像
+        if: ${{ steps.compile.outcome == 'success' && env.FIRENAME1 == 'armv8' }}
+        uses: unifreq/openwrt_packit@master
+        env:
+          OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+          # KERNEL_VERSION_NAME: 6.1.y_6.12.y
+          OPENWRT_VER: R"$(date +%y.%m.%d)"
+          WHOAMI: Bin
+          DISTRIB_DESCRIPTION: OP
+      - name: 整理编译文件
+        if: ${{ steps.compile.outcome == 'success' }}
+        id: organize
+        run: |
+          if [ "${{ env.FIRENAME1 }}" = "x64" ]; then
+            rm -rf openwrt/bin/targets/*/*/packages
+            echo "PACKAGED_OUTPUTPATH=openwrt/bin/targets/*/*" >> $GITHUB_ENV
+          elif [ "${{ env.FIRENAME1 }}" = "armv8" ] && [ "${{ env.PACKAGED_STATUS }}" = "success" ]; then
+            cp openwrt/bin/targets/*/*/config.buildinfo ${{ env.PACKAGED_OUTPUTPATH }}
+          fi
+      - name: 发布release
+        if: ${{ env.UPLOAD_RELEASE == 'true' && steps.organize.outcome == 'success' }}
+        id: release-action
+        uses: ncipollo/release-action@main
+        with:
+          name: ${{ env.DATE }} 🚀 ${{ env.FIRENAME2 }} | 自动编译
+          allowUpdates: true
+          removeArtifacts: true
+          tag: ${{ env.FIRENAME3 }}
+          commit: master
+          token: ${{ secrets.RELEASES_TOKEN }}
+          body: |
+            ${{ env.Info }}
+          artifacts: ${{ env.PACKAGED_OUTPUTPATH }}/*
+      - name: 设置通知变量
+        if: ${{ always() }}
+        run: |
+          if [ "${{ steps.compile.outcome }}" != "success" ]; then
+            echo "STATUS=❌ | 编译失败" >> $GITHUB_ENV
+          else
+            STATUS1="✅ | 编译成功"
+            if [ "${{ env.FIRENAME1 }}" = "armv8" ] && [ "${{ env.PACKAGED_STATUS }}" = "success" ]; then
+              STATUS2="✅ | 打包成功"
+            elif [ "${{ env.FIRENAME1 }}" = "armv8" ] && [ "${{ env.PACKAGED_STATUS }}" != "success" ]; then
+              STATUS2="❌ | 打包失败"
+            else
+              STATUS2="✅ | 无需打包"
+            fi
+            if [ "${{ steps.release-action.outcome }}" = "success" ]; then
+              STATUS3="✅ | 上传成功"
+            else
+              STATUS3="❌ | 上传失败"
+            fi
+            {
+              echo "STATUS<<EOF_STATUS"
+              echo "$STATUS1"
+              echo "---"
+              echo "$STATUS2"
+              echo "---"
+              echo "$STATUS3"
+              echo "EOF_STATUS"
+            } >> $GITHUB_ENV
+          fi
+      - name: 企业微信应用消息推送
+        if: ${{ always() }}
+        env:
+          CORP_ID: ${{ secrets.CORP_ID }}
+          CORP_SECRET: ${{ secrets.CORP_SECRET }}
+          AGENT_ID: ${{ secrets.AGENT_ID }}
+          TEXT:  |
+            🚀GitHub Action 通知
+            
+            仓库: ${{ github.repository }}
+            -------${{ env.FIRENAME2 }}-------
+            ${{ env.STATUS }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}  # 代理（可选）
+        run: |
+          wget --no-check-certificate https://ac.cxw28.cn/notify.py && chmod +x notify.py
+          python3 notify.py

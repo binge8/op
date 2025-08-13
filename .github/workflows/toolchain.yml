@@ -1,0 +1,107 @@
+name: Toolchain
+
+on:
+  repository_dispatch:
+    types: Toolchain
+  workflow_dispatch:
+  #schedule:
+  #  - cron: 00 13 * * *
+
+env:
+  REPO_URL: https://github.com/coolsnowwolf/lede
+  REPO_BRANCH: master
+  APT: scripts/apt
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        PLATFORM: [x64, armv8]
+    steps:
+      - name: 签出
+        uses: actions/checkout@main
+      - name: 拉取源码
+        run: |
+          git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
+      - name: 缓存
+        id: cache
+        env:
+          PLATFORM: ${{ matrix.PLATFORM }}
+        uses: stupidloud/cachewrtbuild@main
+        with:
+          ccache: 'true'
+          mixkey: '${{ env.PLATFORM }}'
+          prefix: '${{ github.workspace }}/openwrt'
+      - name: 搭建编译环境
+        if: ${{ steps.cache.outputs.hit != '1' }}
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get update
+          sudo -E apt-get -y full-upgrade
+          sudo -E apt-get -y install $(cat $APT)
+          sudo -E systemctl daemon-reload
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+          sudo -E timedatectl set-timezone "Asia/Shanghai"
+      - name: 更新Feeds
+        if: ${{ steps.cache.outputs.hit != '1' }}
+        run: |
+          cd openwrt
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+      - name: 下载Packages
+        if: ${{ steps.cache.outputs.hit != '1' }}
+        env:
+          PLATFORM: ${{ matrix.PLATFORM }}
+        run: |
+          cp -p scripts/${{ env.PLATFORM }} openwrt/.config
+          cd openwrt
+          make defconfig
+          make download -j16
+          find dl -size -1024c -exec ls -l {} \;
+          find dl -size -1024c -exec rm -f {} \;
+      - name: 编译
+        if: ${{ steps.cache.outputs.hit != '1' }}
+        run: |
+          cd openwrt
+          echo -e "$(nproc) thread compile"
+          make tools/compile -j$[`nproc`+1] || make tools/compile -j1 V=s
+          make toolchain/compile -j$[`nproc`+1] || make toolchain/compile -j1 V=s
+          echo "compile=success" >> $GITHUB_ENV
+      - name: 设置消息推送变量
+        if: ${{ always() }}
+        env:
+          PLATFORM: ${{ matrix.PLATFORM }}
+        run: |
+          if [ "${{ env.compile }}" = "success" ];then
+            echo "STATUS=✅ ${{ env.PLATFORM }}缓存成功 | 开始编译" >> $GITHUB_ENV
+            curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "j${{ env.PLATFORM }}"}'
+            curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "l${{ env.PLATFORM }}"}'
+          else
+            if [ -n "${{ steps.cache.outputs.hit }}" ];then
+              echo "STATUS=✅ ${{ env.PLATFORM }}缓存不变 | 开始编译" >> $GITHUB_ENV
+              curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "j${{ env.PLATFORM }}"}'
+              curl -X POST https://api.github.com/repos/binge8/op/dispatches -H "Accept: application/vnd.github.everest-preview+json" -H "Authorization: token ${{ secrets.RELEASES_TOKEN }}" --data '{"event_type": "l${{ env.PLATFORM }}"}'
+            else
+              echo "STATUS=❌ ${{ env.PLATFORM }}缓存失败" >> $GITHUB_ENV
+            fi
+          fi
+      - name: 企业微信应用消息推送
+        if: ${{ always() }}
+        env:
+          CORP_ID: ${{ secrets.CORP_ID }}
+          CORP_SECRET: ${{ secrets.CORP_SECRET }}
+          AGENT_ID: ${{ secrets.AGENT_ID }}
+          TEXT:  |
+            🚀GitHub Action 通知
+            
+            仓库: ${{ github.repository }}
+            -----------------------------
+            ${{ env.STATUS }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}  # 代理（可选）
+        run: |
+          wget --no-check-certificate https://ac.cxw28.cn/notify.py && chmod +x notify.py
+          python3 notify.py
