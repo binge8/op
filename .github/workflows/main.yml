@@ -105,6 +105,7 @@ jobs:
         uses: unifreq/openwrt_packit@master
         env:
           OPENWRT_ARMVIRT: openwrt/bin/targets/*/*/*.tar.gz
+          KERNEL_REPO_URL: ophub/kernel
           # KERNEL_VERSION_NAME: 6.1.y_6.12.y
           OPENWRT_VER: R"$(date +%y.%m.%d)"
           WHOAMI: Bin
