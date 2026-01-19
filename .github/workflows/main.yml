@@ -69,6 +69,7 @@ jobs:
         with:
           go-version: 'stable'
           cache: false
+          check-latest: true
       - name: 拉取源码及配置文件
         run: |
           git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
