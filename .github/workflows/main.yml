@@ -59,20 +59,18 @@ jobs:
           sudo -E apt-get -y full-upgrade
           sudo -E apt-get -y install $(cat scripts/apt)
           sudo -E systemctl daemon-reload
+          sudo apt-get remove -y golang-go #卸载系统预装go版本
           sudo -E apt-get -y autoremove --purge
           sudo -E apt-get clean
           sudo ln -fs /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
           echo "Asia/Shanghai" | sudo tee /etc/timezone
           sudo dpkg-reconfigure --frontend noninteractive tzdata
-      - name: 升级go版本
-        run: |
-          # 添加PPA仓库
-          sudo add-apt-repository ppa:longsleep/golang-backports -y
-          sudo apt update
-          # 安装最新版本
-          sudo apt install -y golang-go
-          # 验证
-          go version
+      - name: 检查安装最新go稳定版
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+          check-latest: true
+          cache: false
       - name: 拉取源码及配置文件
         run: |
           git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
