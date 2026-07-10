@@ -52,6 +52,7 @@ jobs:
           cd openwrt
           ./scripts/feeds update -a
           ./scripts/feeds install -a
+          rm -rf feeds/luci/applications/luci-app-passwall
       - name: 下载Packages
         if: ${{ steps.cache.outputs.hit != '1' }}
         env:
