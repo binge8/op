@@ -1,0 +1,23 @@
+name: x64精简版
+
+on:
+  repository_dispatch:
+    types: jx64
+  workflow_dispatch:
+  #schedule:
+  #  - cron: 00 16 * * *
+
+#CI权限
+permissions: write-all
+
+jobs:
+  build:
+    #调用公用编译核心main.yml
+    uses: ./.github/workflows/main.yml
+    secrets: inherit
+    with:
+      FIRENAME: jx64
+      FIRENAME1: x64
+      REPO_URL: https://github.com/coolsnowwolf/lede
+      REPO_BRANCH: master
+      UPLOAD_RELEASE: true
