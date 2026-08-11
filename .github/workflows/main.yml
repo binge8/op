@@ -78,6 +78,8 @@ jobs:
           mixkey: '${{ env.FIRENAME1 }}'
           prefix: '${{ github.workspace }}/openwrt'
       - name: 自定义配置
+        env:
+          MY_URL: ${{ secrets.MY_URL }}
         run: |
           cd openwrt
           . diy.sh
