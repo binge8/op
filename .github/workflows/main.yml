@@ -31,14 +31,17 @@ jobs:
   builds:
     runs-on: ubuntu-24.04
     steps:
-      - name: Setup swap
-        run: |
-          sudo fallocate -l 8G /swapfile
-          sudo chmod 600 /swapfile
-          sudo mkswap /swapfile
-          sudo swapon /swapfile
       - name: Checkout
         uses: actions/checkout@main
+      - name: Setup 8G Swap
+        run: |
+           sudo swapoff /mnt/swapfile || true
+           sudo rm -f /mnt/swapfile
+           sudo fallocate -l 8G /mnt/swapfile
+           sudo chmod 600 /mnt/swapfile
+           sudo mkswap /mnt/swapfile
+           sudo swapon /mnt/swapfile
+           free -h
       - name: 检查服务器配置
         run: |
           echo "已知CPU型号（降序）：7763,8370C,8272CL,8171M,E5系列"
