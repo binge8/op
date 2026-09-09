@@ -33,15 +33,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@main
-      - name: Setup 8G Swap
+      - name: Add extra swap
         run: |
-           sudo swapoff /mnt/swapfile || true
-           sudo rm -f /mnt/swapfile
-           sudo fallocate -l 8G /mnt/swapfile
-           sudo chmod 600 /mnt/swapfile
-           sudo mkswap /mnt/swapfile
-           sudo swapon /mnt/swapfile
-           free -h
+          sudo swapoff /mnt/swapfile || true
+          sudo rm -f /mnt/swapfile
+          sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192 status=progress
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          sudo sysctl vm.swappiness=10
+          free -h
       - name: 检查服务器配置
         run: |
           echo "已知CPU型号（降序）：7763,8370C,8272CL,8171M,E5系列"
