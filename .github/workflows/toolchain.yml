@@ -22,6 +22,16 @@ jobs:
     steps:
       - name: 签出
         uses: actions/checkout@main
+      - name: Add extra swap
+        run: |
+          sudo swapoff /mnt/swapfile || true
+          sudo rm -f /mnt/swapfile
+          sudo dd if=/dev/zero of=/mnt/swapfile bs=1M count=8192 status=progress
+          sudo chmod 600 /mnt/swapfile
+          sudo mkswap /mnt/swapfile
+          sudo swapon /mnt/swapfile
+          sudo sysctl vm.swappiness=10
+          free -h
       - name: 拉取源码
         run: |
           git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
