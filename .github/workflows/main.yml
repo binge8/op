@@ -29,8 +29,14 @@ env:
 
 jobs:
   builds:
-    runs-on: ubuntu-24.04-large
+    runs-on: ubuntu-24.04
     steps:
+      - name: Setup swap
+        run: |
+          sudo fallocate -l 8G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
       - name: Checkout
         uses: actions/checkout@main
       - name: 检查服务器配置
